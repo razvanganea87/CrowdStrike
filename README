@@ -1,0 +1,44 @@
+=== SETUP AND DEPENDENCIES ===
+
+pip3 install python-dotenv
+
+In order for this integrator to work, CROWDSTRIKE_CLIENT_ID and CROWDSTRIKE_CLIENT_SECRET must be completed in the .env file
+
+=== RUN ===
+
+python3 main.py
+
+=== HOW IT WORKS ===
+
+First, to complete the integration, we need the assets and vulnerabilities datas. To perform this, an API client (crowd_strike_client.py)
+was made, to extract the assets and vulnerabilities. We need a token for both methods (authenticate). For vulnerabilities, I will
+extract just 3000 items for test purposes, three requests for 1000 items each. If I want to extract all, I should delete the following
+line code:
+    if step >= 3:
+        break
+This Python-based integration pulls **assets** and **vulnerabilities** from CrowdStrike's API and maps them into Zafran’s internal models (`InstanceData` and `Vulnerability`). It simulates the structure of a Starlark-based integration while using Python for development and testing.
+
+For Assets I didn't made a pagination because in this particular case was no need.
+
+After the information is fetched, I mapped them in Zafran models. I used asset_mapper.py and vulnerability_mapper.py in order to do this.
+The mappers are using the models to simultate the Zafran models.
+I observed that the relation between assets and vulnerabilities it's made by "aid" field from vulnerability, that corresponds to
+asset instance_id.
+The integration file will just return the data in the desired form.
+
+=== FEATURES ===
+
+1. Authentication
+   - Uses OAuth2 client credentials flow to obtain a bearer token from CrowdStrike.
+
+2. Fetching Assets
+   - Retrieves assets via CrowdStrike’s `/devices/queries/devices/v1` and `/devices/entities/devices/v2` endpoints.
+   - Maps raw assets into Zafran’s `ZafranAsset` model using `AssetMapper`.
+
+3. Fetching Vulnerabilities
+   - Retrieves vulnerabilities from `/spotlight/combined/vulnerabilities/v1`.
+   - Applies the `status:open` filter to fetch only relevant vulnerabilities.
+   - Maps raw vulnerabilities into Zafran’s `ZafranVulnerability` model using `VulnerabilityMapper`.
+   - Links each vulnerability to its corresponding asset using the `aid` field.
+
+
