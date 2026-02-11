@@ -1,0 +1,2 @@
+class CrowdStrikeAuthError(Exception):
+    pass
